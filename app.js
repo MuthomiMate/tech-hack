@@ -1,6 +1,7 @@
 const express = require('express');
 const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
 const bodyParser = require('body-parser');
+const axios = require('axios')
 app = express();
 app.use(bodyParser.urlencoded({
     extended: true
@@ -50,14 +51,31 @@ app.post('/', (req, res) =>{
 
     natural_language_understanding.analyze(parameters, function(err, response) {
         if (err){
-        res.json({'error': err})
+            res.json({'error': err})
         }
         else {
-        res.json({'response': response})
+            const actions = response.semantic_roles;
+            getWordsThatMatch(actions);
+            // .map(action =>{
+            //     getWordsThatMatch(action.action.text)
+            //     res.json({'response': response})
+            // })
         }
     });
 
 });
+
+getWordsThatMatch = async (parameters) =>{
+    parameters.map(action =>{
+        words = action.action.text;
+        const word = words.replace(" ", "+");
+        const response =  await axios.get(`https://api.datamuse.com/words?ml=${word}`);
+        console.log(response);
+        return response;
+    });
+
+
+}
 module.exports = app;
 
 
