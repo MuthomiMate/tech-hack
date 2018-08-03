@@ -47,9 +47,6 @@ app.post('/', (req, res) => {
             res.json({'error': err})
         }
         else {
-            // console.log(response.semantic_roles[0].object.keywords, "\n ************");
-            // console.log("=========\n\n", response.keywords);
-            // const actions = response.semantic_roles;
             const result = await getWordsThatMatch(response);
             res.json(result);
         }
@@ -72,7 +69,7 @@ const getWordsThatMatch = async (parameters) => {
     for (let item of parameters.keywords) {
         words = item.text;
         const word = words.replace(" ", "+");
-        const response =  await axios.get(`https://api.datamuse.com/words?ml=${word}`);
+        const response =  await axios.get(`https://api.datamuse.com/words?ml=${word}&max=50`);
 
         const matchedWordsCommunication = intersect(communication, response.data);
         allMatchedWordsForCommunication.push(...matchedWordsCommunication);
@@ -91,38 +88,30 @@ const getWordsThatMatch = async (parameters) => {
 
         const matchedWordsQuantity = intersect(quantity, response.data);
         allMatchedWordsForQuantity.push(...matchedWordsQuantity);
+
+        const sentimentResponse =  await axios.get(`https://api.datamuse.com/words?rel_trg=${word}`);
+        const sentimentWordsCommunication = intersect(communication, sentimentResponse.data);
+        const sentimentWordsInitiative = intersect(initiative, sentimentResponse.data);
+        const sentimentWordsIntegration = intersect(integration, sentimentResponse.data);
+        const sentimentWordsProfessionalism = intersect(professionalism, sentimentResponse.data);
+        const sentimentWordsQuality = intersect(quality, sentimentResponse.data);
+        const sentimentWordsQuantity = intersect(quantity, sentimentResponse.data);
+        result.sentiment = {
+            communication: sentimentWordsCommunication.length > 0 ? 'positive' : 'negative',
+            initiative: sentimentWordsInitiative.length > 0 ? 'positive' : 'negative',
+            integration: sentimentWordsIntegration.length > 0 ? 'positive' : 'negative',
+            professionalism: sentimentWordsProfessionalism.length > 0 ? 'positive' : 'negative',
+            quality: sentimentWordsQuality.length > 0 ? 'positive' : 'negative',
+            quantity: sentimentWordsQuantity.length > 0 ? 'positive' : 'negative',
+        }
     }
 
-    for (let item of parameters.semantic_roles) {
-        words = item.action.text;
-        const word = words.replace(" ", "+");
-        const response =  await axios.get(`https://api.datamuse.com/words?ml=${word}`);
-
-        const matchedWordsCommunication = intersect(communication, response.data);
-        allMatchedWordsForCommunication.push(...matchedWordsCommunication);
-
-        const matchedWordsInitiative = intersect(initiative, response.data);
-        allMatchedWordsForInitiative.push(...matchedWordsInitiative);
-
-        const matchedWordsIntegration = intersect(integration, response.data);
-        allMatchedWordsForIntegration.push(...matchedWordsIntegration);
-
-        const matchedWordsProfessionalism = intersect(professionalism, response.data);
-        allMatchedWordsForProfessionalism.push(...matchedWordsProfessionalism);
-
-        const matchedWordsQuality = intersect(quality, response.data);
-        allMatchedWordsForQuality.push(...matchedWordsQuality);
-
-        const matchedWordsQuantity = intersect(quantity, response.data);
-        allMatchedWordsForQuantity.push(...matchedWordsQuantity);
-    }
-
-    result.communication = [ ...new Set(allMatchedWordsForCommunication) ];
-    result.initiative = [ ...new Set(allMatchedWordsForInitiative) ];
-    result.integration = [ ...new Set(allMatchedWordsForIntegration) ];
-    result.professionalism = [ ...new Set(allMatchedWordsForProfessionalism) ];
-    result.quality = [ ...new Set(allMatchedWordsForQuality) ];
-    result.quantity = [ ...new Set(allMatchedWordsForQuantity) ];
+    result.communication = allMatchedWordsForCommunication;
+    result.initiative = allMatchedWordsForInitiative;
+    result.integration = allMatchedWordsForIntegration;
+    result.professionalism = allMatchedWordsForProfessionalism;
+    result.quality = allMatchedWordsForQuality;
+    result.quantity = allMatchedWordsForQuantity;
 
     return result;
 }
