@@ -39,9 +39,7 @@ app.post('/', (req, res) => {
             'relations': {
                 'model': 'en-news'
             },
-            'sentiment': {
-                // 'document': true
-            }
+            'sentiment': {}
         }
     }
 
@@ -50,7 +48,6 @@ app.post('/', (req, res) => {
             res.json({'error': err})
         }
         else {
-            console.log(response)
             const result = await getWordsThatMatch(response);
             res.json(result);
         }
@@ -100,13 +97,13 @@ const getWordsThatMatch = async (parameters) => {
         const sentimentWordsProfessionalism = intersect(professionalism, sentimentResponse.data);
         const sentimentWordsQuality = intersect(quality, sentimentResponse.data);
         const sentimentWordsQuantity = intersect(quantity, sentimentResponse.data);
-        result.sentiment = {
-            communication: sentimentWordsCommunication.length > 0 ? 'positive' : 'negative',
-            initiative: sentimentWordsInitiative.length > 0 ? 'positive' : 'negative',
-            integration: sentimentWordsIntegration.length > 0 ? 'positive' : 'negative',
-            professionalism: sentimentWordsProfessionalism.length > 0 ? 'positive' : 'negative',
-            quality: sentimentWordsQuality.length > 0 ? 'positive' : 'negative',
-            quantity: sentimentWordsQuantity.length > 0 ? 'positive' : 'negative',
+        result.attributePresence = {
+            communication: sentimentWordsCommunication.length > 0 ? true : false,
+            initiative: sentimentWordsInitiative.length > 0 ? true : false,
+            integration: sentimentWordsIntegration.length > 0 ? true : false,
+            professionalism: sentimentWordsProfessionalism.length > 0 ? true : false,
+            quality: sentimentWordsQuality.length > 0 ? true : false,
+            quantity: sentimentWordsQuantity.length > 0 ? true : false,
         }
     }
 
