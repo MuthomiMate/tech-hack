@@ -2,6 +2,7 @@ const express = require('express');
 const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js');
 const bodyParser = require('body-parser');
 const axios = require('axios');
+const cors = require('cors')
 const communication = require('./attributes/communication.json');
 const initiative = require('./attributes/initiative.json');
 const integration = require('./attributes/integration.json');
@@ -14,7 +15,12 @@ app.use(bodyParser.urlencoded({
     extended: true
   }));
 app.use(bodyParser.json());
-
+app.use(cors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+}));
 
 app.post('/', (req, res) => {
     const text = req.body.text;
@@ -118,7 +124,3 @@ const getWordsThatMatch = async (parameters) => {
 }
 
 module.exports = app;
-
-
-
-
