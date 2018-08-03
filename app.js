@@ -39,6 +39,9 @@ app.post('/', (req, res) => {
             'relations': {
                 'model': 'en-news'
             },
+            'sentiment': {
+                // 'document': true
+            }
         }
     }
 
@@ -47,6 +50,7 @@ app.post('/', (req, res) => {
             res.json({'error': err})
         }
         else {
+            console.log(response)
             const result = await getWordsThatMatch(response);
             res.json(result);
         }
@@ -58,7 +62,7 @@ const intersect = (array1, array2) =>
     array1.filter(text => -1 !== array2.map(item => item.word).indexOf(text));
 
 const getWordsThatMatch = async (parameters) => {
-    const result = {};
+    const result = { overallSentiment: parameters.sentiment.document.label };
     let allMatchedWordsForCommunication = [];
     let allMatchedWordsForInitiative = [];
     let allMatchedWordsForIntegration = [];
